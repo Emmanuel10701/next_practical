@@ -4,23 +4,33 @@ import io from "socket.io-client";
 let socket;
 
 export default function Chat() {
+  const [room, setRoom] = useState("general");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
     socket = io();
+
+    socket.emit("join", { userId: "user123", room });
 
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
 
     return () => socket.disconnect();
-  }, []);
+  }, [room]);
 
   const sendMessage = () => {
     if (message.trim()) {
-      socket.emit("sendMessage", message);
+      socket.emit("sendMessage", {
+        room,
+        message,
+        userId: "user123",
+        replyTo,
+      });
       setMessage("");
+      setReplyTo(null); // Clear reply
     }
   };
 
@@ -28,29 +38,44 @@ export default function Chat() {
     <div className="h-screen flex flex-col bg-gray-100">
       {/* Header */}
       <div className="bg-blue-500 text-white py-4 px-6 shadow-md">
-        <h1 className="text-xl font-semibold">Chat Application</h1>
+        <h1 className="text-xl font-semibold">Chat Room: {room}</h1>
       </div>
 
       {/* Chat Container */}
-      <div className="flex-grow p-4 overflow-y-auto">
-        <div className="space-y-4">
-          {messages.map((msg, index) => (
+      <div className="flex-grow p-4 overflow-y-auto space-y-4">
+        {messages.map((msg, index) => (
+          <div key={index} className="space-y-1">
+            {msg.replyTo && (
+              <div className="text-gray-500 text-sm pl-4 border-l-2 border-gray-300">
+                Replying to: {msg.replyTo.message}
+              </div>
+            )}
             <div
-              key={index}
               className={`p-3 rounded-lg ${
-                index % 2 === 0
+                msg.userId === "user123"
                   ? "bg-blue-100 text-blue-900 self-end"
                   : "bg-gray-200 text-gray-800 self-start"
               } max-w-xs`}
             >
-              {msg}
+              {msg.message}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
-      {/* Input Field */}
+      {/* Input Section */}
       <div className="bg-white py-4 px-6 shadow-inner flex items-center space-x-4">
+        {replyTo && (
+          <div className="text-sm text-gray-500 border px-2 py-1 rounded">
+            Replying to: {replyTo.message}
+            <button
+              className="ml-2 text-red-500"
+              onClick={() => setReplyTo(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
         <input
           type="text"
           value={message}
