@@ -35,54 +35,72 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen flex bg-gray-100">
+    <div className="h-screen flex flex-col md:flex-row bg-gray-100">
       {/* Sidebar for Groups */}
-      <div className="w-64 bg-gray-200 p-4">
-        <h2 className="text-lg font-bold mb-4">Groups</h2>
-        {["general", "sports", "tech"].map((grp) => (
-          <div
-            key={grp}
-            className={`cursor-pointer p-2 rounded ${
-              room === grp ? "bg-blue-500 text-white" : "hover:bg-gray-300"
-            }`}
-            onClick={() => setRoom(grp)}
-          >
-            {grp}
-          </div>
-        ))}
+      <div className="w-full md:w-1/3 bg-gray-200 p-4 md:border-r border-gray-300">
+        <h2 className="text-lg font-bold mb-4">Chats</h2>
+        <div className="space-y-2">
+          {["general", "sports", "tech"].map((grp) => (
+            <div
+              key={grp}
+              className={`cursor-pointer p-3 rounded-lg flex items-center space-x-4 ${
+                room === grp
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-300 text-gray-800"
+              }`}
+              onClick={() => setRoom(grp)}
+            >
+              <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center text-white">
+                {grp.charAt(0).toUpperCase()}
+              </div>
+              <span className="text-lg font-medium">{grp}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Chat Section */}
       <div className="flex flex-col flex-grow">
         {/* Header */}
-        <div className="bg-blue-500 text-white py-4 px-6 shadow-md">
+        <div className="bg-blue-500 text-white py-4 px-6 shadow-md flex items-center">
+          <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center mr-4">
+            {room.charAt(0).toUpperCase()}
+          </div>
           <h1 className="text-xl font-semibold">Chat Room: {room}</h1>
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-grow p-4 overflow-y-auto space-y-4">
+        <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-white">
           {messages.map((msg, index) => (
-            <div key={index} className="space-y-1">
+            <div
+              key={index}
+              className={`space-y-1 ${
+                msg.userId === "user123" ? "text-right" : "text-left"
+              }`}
+            >
               {msg.replyTo && (
                 <div className="text-gray-500 text-sm pl-4 border-l-2 border-gray-300">
                   Replying to: {msg.replyTo.message}
                 </div>
               )}
               <div
-                className={`p-3 rounded-lg ${
+                className={`p-3 rounded-lg inline-block max-w-xs ${
                   msg.userId === "user123"
-                    ? "bg-blue-100 text-blue-900 self-end"
-                    : "bg-gray-200 text-gray-800 self-start"
-                } max-w-xs`}
+                    ? "bg-blue-100 text-blue-900"
+                    : "bg-gray-200 text-gray-800"
+                }`}
               >
                 {msg.message}
               </div>
+              <span className="text-xs text-gray-400">
+                {new Date().toLocaleTimeString()}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Input Section */}
-        <div className="bg-white py-4 px-6 shadow-inner flex items-center space-x-4">
+        <div className="bg-gray-100 py-4 px-6 flex items-center space-x-4">
           {replyTo && (
             <div className="text-sm text-gray-500 border px-2 py-1 rounded">
               Replying to: {replyTo.message}
