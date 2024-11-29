@@ -1,6 +1,10 @@
 import { Server } from "socket.io";
+import dbConnect from "../../lib/mongodb";
+import Message from "../../models/Message";
 
-const ioHandler = (req, res) => {
+const ioHandler = async (req, res) => {
+  await dbConnect(); // Connect to MongoDB
+
   if (!res.socket.server.io) {
     const io = new Server(res.socket.server);
     res.socket.server.io = io;
@@ -18,13 +22,25 @@ const ioHandler = (req, res) => {
       });
 
       // Handle message sending
-      socket.on("sendMessage", ({ room, message, userId, replyTo }) => {
-        io.to(room).emit("receiveMessage", {
-          userId,
+      socket.on("sendMessage", async ({ room, message, userId, replyTo }) => {
+        const newMessage = new Message({
+          room,
           message,
+          userId,
           replyTo,
-          timestamp: new Date(),
         });
+
+        try {
+          await newMessage.save(); // Save to MongoDB
+          io.to(room).emit("receiveMessage", {
+            userId,
+            message,
+            replyTo,
+            timestamp: newMessage.timestamp,
+          });
+        } catch (error) {
+          console.error("Error saving message:", error);
+        }
       });
 
       // Handle user disconnect
@@ -37,6 +53,7 @@ const ioHandler = (req, res) => {
       });
     });
   }
+
   res.end();
 };
 
