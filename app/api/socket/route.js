@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import dbConnect from "../../lib/mongodb";
-import Message from "../../models/Message";
+import dbConnect from "../../../libs/prisma";
+import Message from "../../../models/m";
 
 const ioHandler = async (req, res) => {
   await dbConnect(); // Connect to MongoDB
