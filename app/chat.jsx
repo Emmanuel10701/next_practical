@@ -1,10 +1,13 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import Sidebar from "./components/group";
 import io from "socket.io-client";
 
 let socket;
 
 export default function Chat() {
-  const [room, setRoom] = useState("general"); // Current room
+  const [room, setRoom] = useState("general");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [replyTo, setReplyTo] = useState(null);
@@ -36,28 +39,12 @@ export default function Chat() {
 
   return (
     <div className="h-screen flex flex-col md:flex-row bg-gray-100">
-      {/* Sidebar for Groups */}
-      <div className="w-full md:w-1/3 bg-gray-200 p-4 md:border-r border-gray-300">
-        <h2 className="text-lg font-bold mb-4">Chats</h2>
-        <div className="space-y-2">
-          {["general", "sports", "tech"].map((grp) => (
-            <div
-              key={grp}
-              className={`cursor-pointer p-3 rounded-lg flex items-center space-x-4 ${
-                room === grp
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-300 text-gray-800"
-              }`}
-              onClick={() => setRoom(grp)}
-            >
-              <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center text-white">
-                {grp.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-lg font-medium">{grp}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Sidebar */}
+      <Sidebar
+        groups={["general", "sports", "tech"]}
+        currentRoom={room}
+        onRoomChange={setRoom}
+      />
 
       {/* Chat Section */}
       <div className="flex flex-col flex-grow">
