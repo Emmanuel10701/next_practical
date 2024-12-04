@@ -1,10 +1,20 @@
+"use client";
 
-"use client"
-
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard"); // Redirect authenticated users to the dashboard
+    }
+  }, [status, router]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
