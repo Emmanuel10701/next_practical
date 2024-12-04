@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Sidebar from "./components/group";
+import Sidebar from "../components/group";
 import io from "socket.io-client";
 
 let socket;
@@ -12,13 +12,10 @@ export default function Chat() {
   const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
-    // Connect to Socket.IO
     socket = io();
 
-    // Join the current room
     socket.emit("join", { userId: "user123", room });
 
-    // Listen for incoming messages
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -26,8 +23,7 @@ export default function Chat() {
     return () => {
       socket.disconnect();
     };
-  }, [room]); // Rejoin when the room changes
-
+  }, [room]);
   const sendMessage = () => {
     if (message.trim()) {
       socket.emit("sendMessage", { room, message, userId: "user123", replyTo });
