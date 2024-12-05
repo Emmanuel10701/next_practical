@@ -1,60 +1,29 @@
-import { Server } from "socket.io";
-import dbConnect from "../../../libs/prisma";
-import Message from "../../../models/m";
+import mongoose from 'mongoose';
+import Message from '../../models/mongoose';
 
-const ioHandler = async (req, res) => {
-  await dbConnect(); // Connect to MongoDB
-
-  if (!res.socket.server.io) {
-    const io = new Server(res.socket.server);
-    res.socket.server.io = io;
-
-    const users = {};
-
-    io.on("connection", (socket) => {
-      console.log("New connection:", socket.id);
-
-      // Handle user joining
-      socket.on("join", ({ userId, room }) => {
-        socket.join(room);
-        users[socket.id] = { userId, room };
-        socket.to(room).emit("userJoined", { userId });
-      });
-
-      // Handle message sending
-      socket.on("sendMessage", async ({ room, message, userId, replyTo }) => {
-        const newMessage = new Message({
-          room,
-          message,
-          userId,
-          replyTo,
-        });
-
-        try {
-          await newMessage.save(); // Save to MongoDB
-          io.to(room).emit("receiveMessage", {
-            userId,
-            message,
-            replyTo,
-            timestamp: newMessage.timestamp,
-          });
-        } catch (error) {
-          console.error("Error saving message:", error);
-        }
-      });
-
-      // Handle user disconnect
-      socket.on("disconnect", () => {
-        const user = users[socket.id];
-        if (user) {
-          socket.to(user.room).emit("userLeft", { userId: user.userId });
-          delete users[socket.id];
-        }
-      });
-    });
-  }
-
-  res.end();
+const connectToDatabase = async () => {
+  if (mongoose.connections[0].readyState) return;
+  await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 };
 
-export default ioHandler;
+export default async function handler(req, res) {
+  await connectToDatabase();
+
+  if (req.method === 'POST') {
+    // Save new message
+    const { room, message, userId, replyTo } = req.body;
+    const newMessage = new Message({ room, message, userId, replyTo });
+    await newMessage.save();
+    return res.status(201).json(newMessage);
+  } else if (req.method === 'GET') {
+    // Get messages for the room
+    const { room } = req.query;
+    const messages = await Message.find({ room }).sort({ createdAt: 1 });
+    return res.status(200).json(messages);
+  } else {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+}
