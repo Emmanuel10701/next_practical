@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/group";
 import io from "socket.io-client";
 
@@ -12,10 +12,18 @@ export default function Chat() {
   const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
+    // Connect to the socket server
     socket = io();
 
+    // Join the room
     socket.emit("join", { userId: "user123", room });
 
+    // Fetch initial messages from MongoDB
+    fetch(`/api/messages?room=${room}`)
+      .then((response) => response.json())
+      .then((data) => setMessages(data));
+
+    // Listen for incoming messages from socket
     socket.on("receiveMessage", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -24,11 +32,37 @@ export default function Chat() {
       socket.disconnect();
     };
   }, [room]);
+
   const sendMessage = () => {
     if (message.trim()) {
-      socket.emit("sendMessage", { room, message, userId: "user123", replyTo });
+      const newMessage = {
+        message,
+        userId: "user123",
+        room,
+        status: "sent",
+        replyTo,
+      };
+
+      // Send message to MongoDB via API route
+      fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newMessage),
+      })
+        .then((res) => res.json())
+        .then((msg) => {
+          setMessages((prev) => [...prev, msg]);
+          socket.emit("sendMessage", msg);
+        });
+
       setMessage("");
       setReplyTo(null);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
     }
   };
 
@@ -54,29 +88,21 @@ export default function Chat() {
         {/* Chat Messages */}
         <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-white">
           {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`space-y-1 ${
-                msg.userId === "user123" ? "text-right" : "text-left"
-              }`}
-            >
+            <div key={index} className={`space-y-1 ${msg.userId === "user123" ? "text-right" : "text-left"}`}>
               {msg.replyTo && (
                 <div className="text-gray-500 text-sm pl-4 border-l-2 border-gray-300">
                   Replying to: {msg.replyTo.message}
                 </div>
               )}
-              <div
-                className={`p-3 rounded-lg inline-block max-w-xs ${
-                  msg.userId === "user123"
-                    ? "bg-blue-100 text-blue-900"
-                    : "bg-gray-200 text-gray-800"
-                }`}
-              >
+              <div className={`p-3 rounded-lg inline-block max-w-xs ${msg.userId === "user123" ? "bg-blue-100 text-blue-900" : "bg-gray-200 text-gray-800"}`}>
                 {msg.message}
+                <span className="text-xs text-gray-400 ml-2">
+                  {msg.status === "sent" && "•"}
+                  {msg.status === "delivered" && "✔"}
+                  {msg.status === "read" && "✔✔"}
+                </span>
               </div>
-              <span className="text-xs text-gray-400">
-                {new Date().toLocaleTimeString()}
-              </span>
+              <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleTimeString()}</span>
             </div>
           ))}
         </div>
@@ -86,10 +112,7 @@ export default function Chat() {
           {replyTo && (
             <div className="text-sm text-gray-500 border px-2 py-1 rounded">
               Replying to: {replyTo.message}
-              <button
-                className="ml-2 text-red-500"
-                onClick={() => setReplyTo(null)}
-              >
+              <button className="ml-2 text-red-500" onClick={() => setReplyTo(null)}>
                 Cancel
               </button>
             </div>
@@ -98,6 +121,7 @@ export default function Chat() {
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-blue-200"
           />
