@@ -11,7 +11,7 @@ export default function Login() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard"); // Redirect authenticated users to the dashboard
+      router.push("/chat"); // Redirect authenticated users to the dashboard
     }
   }, [status, router]);
 

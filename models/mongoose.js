@@ -2,15 +2,14 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    room: { type: String, required: true }, // Room identifier
-    userId: { type: String, required: true }, // User ID
-    message: { type: String, required: true }, // Message content
-    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "Message" }, // Optional reply-to message
-    timestamp: { type: Date, default: Date.now }, // Timestamp of the message
+    room: String,
+    userId: String,
+    message: String,
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null },
+    createdAt: { type: Date, default: Date.now }
   },
-  {
-    timestamps: true, // Automatically add createdAt and updatedAt fields
-  }
+  { timestamps: true }
 );
 
-export default mongoose.models.Message || mongoose.model("Message", messageSchema);
+const Message = mongoose.model("Message", messageSchema);
+export default Message;
