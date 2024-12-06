@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import  Connection  from '../models/mongoose';
 const messageSchema = new mongoose.Schema(
   {
     room: String,
