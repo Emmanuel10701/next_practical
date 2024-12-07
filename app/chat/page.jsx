@@ -19,7 +19,7 @@ export default function Chat() {
     socket.emit("join", { userId: "user123", room });
 
     // Fetch initial messages from MongoDB
-    fetch(`/api/messages?room=${room}`)
+    fetch(`/api/socket?room=${room}`)
       .then((response) => response.json())
       .then((data) => setMessages(data));
 
@@ -44,7 +44,7 @@ export default function Chat() {
       };
 
       // Send message to MongoDB via API route
-      fetch("/api/messages", {
+      fetch("/api/socket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newMessage),
