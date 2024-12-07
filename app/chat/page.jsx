@@ -67,7 +67,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen flex flex-col md:flex-row bg-gray-100">
+    <div className="h-screen  flex flex-col md:flex-row bg-gray-100">
       {/* Sidebar */}
       <Sidebar
         groups={["general", "sports", "tech"]}

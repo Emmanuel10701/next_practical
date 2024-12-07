@@ -2,7 +2,7 @@
 
 export default function Sidebar({ groups, currentRoom, onRoomChange }) {
   return (
-    <div className="w-full md:w-1/3 bg-gradient-to-tl from-blue-400 to-indigo-500 p-6 md:border-r border-gray-300 shadow-xl">
+    <div className="w-full md:w-1/4 bg-gradient-to-tl from-blue-400 to-indigo-500 p-6 md:border-r border-gray-300 shadow-xl">
       <h2 className="text-2xl font-semibold text-white mb-6">Chats</h2>
       <div className="space-y-4">
         {groups.map((group) => (
