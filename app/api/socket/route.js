@@ -1,6 +1,8 @@
+import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import Message from '../../models/mongoose';
 
+// Database connection function
 const connectToDatabase = async () => {
   if (mongoose.connections[0].readyState) return;
   await mongoose.connect(process.env.MONGO_URI, {
@@ -9,21 +11,40 @@ const connectToDatabase = async () => {
   });
 };
 
-export default async function handler(req, res) {
-  await connectToDatabase();
+// POST: Save a new message
+export async function POST(req) {
+  try {
+    await connectToDatabase();
+    const body = await req.json();
+    const { room, message, userId, replyTo } = body;
 
-  if (req.method === 'POST') {
-    // Save new message
-    const { room, message, userId, replyTo } = req.body;
     const newMessage = new Message({ room, message, userId, replyTo });
     await newMessage.save();
-    return res.status(201).json(newMessage);
-  } else if (req.method === 'GET') {
-    // Get messages for the room
-    const { room } = req.query;
+
+    return NextResponse.json(newMessage, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to save the message' }, { status: 500 });
+  }
+}
+
+// GET: Retrieve messages for a room
+export async function GET(req) {
+  try {
+    await connectToDatabase();
+    const url = new URL(req.url);
+    const room = url.searchParams.get('room');
+
     const messages = await Message.find({ room }).sort({ createdAt: 1 });
-    return res.status(200).json(messages);
-  } else {
-    return res.status(405).json({ message: 'Method not allowed' });
+
+    return NextResponse.json(messages, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+  }
+}
+
+// Handle unsupported HTTP methods
+export async function middleware(req) {
+  if (!['GET', 'POST'].includes(req.method)) {
+    return NextResponse.json({ message: 'Method not allowed' }, { status: 405 });
   }
 }
