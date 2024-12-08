@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import Message from '../../models/mongoose';
 
-// Database connection function
 const connectToDatabase = async () => {
   if (mongoose.connections[0].readyState) return;
   await mongoose.connect(process.env.MONGO_URI, {
@@ -11,7 +10,6 @@ const connectToDatabase = async () => {
   });
 };
 
-// POST: Save a new message
 export async function POST(req) {
   try {
     await connectToDatabase();
@@ -27,7 +25,6 @@ export async function POST(req) {
   }
 }
 
-// GET: Retrieve messages for a room
 export async function GET(req) {
   try {
     await connectToDatabase();
