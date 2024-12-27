@@ -6,7 +6,7 @@ Welcome to my real-time chat application! This project allows users to send and 
 
 ## 🌟 About the Project  
 
-This chat application enables users to connect with each other in real time. With features such as private messaging, group chats, and persistent message storage, the app is designed to enhance communication in a fast, secure, and user-friendly way.
+This chat application allows users to connect with one another in real time. With features like private messaging, group chats, and persistent message storage, the app is designed to facilitate communication in a fast, secure, and user-friendly manner.
 
 ---
 
