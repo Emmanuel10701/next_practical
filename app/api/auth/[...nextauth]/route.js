@@ -9,8 +9,9 @@ export const authOptions = {
     }),
   ],
   pages: {
-    signIn: "/chat", // Redirect to your custom Login page
+    signIn: "/chat", 
   },
 };
 
-export default NextAuth(authOptions);
+export const GET = (req, res) => NextAuth(req, res, authOptions);
+export const POST = (req, res) => NextAuth(req, res, authOptions);
