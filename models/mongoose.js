@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import dbConnect from '../libs/mongodb';
+import dbConnect from '../libs/prisma';
 
 const messageSchema = new mongoose.Schema(
   {

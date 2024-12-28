@@ -1,30 +1,44 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react"; // Assuming you're using next-auth
 import Sidebar from "../components/group";
 import io from "socket.io-client";
+import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress
 
 let socket;
 
 export default function Chat() {
-  const { data: session } = useSession(); // Get session data
+  const { data: session, status } = useSession(); // Get session data and loading status
   const [room, setRoom] = useState("general");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
+    if (status === "loading") return; // Skip rendering while session is loading
+    if (!session) return; // If no session, don't proceed with socket connection
+
     // Connect to the socket server
     socket = io();
 
     // Join the room
-    socket.emit("join", { userId: session?.user?.id || "guest", room });
+    socket.emit("join", { userId: session.user.id, room });
 
     // Fetch initial messages from MongoDB
     fetch(`/api/socket?room=${room}`)
       .then((response) => response.json())
-      .then((data) => setMessages(data));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else {
+          console.error("Fetched data is not an array", data);
+          setMessages([]); // Default to empty array if not an array
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching messages:", error);
+        setMessages([]); // Default to empty array on error
+      });
 
     // Listen for incoming messages from socket
     socket.on("receiveMessage", (msg) => {
@@ -34,7 +48,7 @@ export default function Chat() {
     return () => {
       socket.disconnect();
     };
-  }, [room, session]);
+  }, [room, session, status]);
 
   const sendMessage = () => {
     if (!session) {
@@ -74,6 +88,14 @@ export default function Chat() {
     }
   };
 
+  if (status === "loading") {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    ); // Display Material UI spinner while session is loading
+  }
+
   return (
     <div className="h-screen flex flex-col md:flex-row bg-gray-100">
       {/* Sidebar */}
@@ -87,10 +109,15 @@ export default function Chat() {
       <div className="flex flex-col flex-grow">
         {/* Header */}
         <div className="bg-blue-500 text-white py-4 px-6 shadow-md flex items-center">
-          <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center mr-4">
-            {room.charAt(0).toUpperCase()}
+          {/* Profile section */}
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
+              {session.user.name.charAt(0).toUpperCase()}
+            </div>
+            <h1 className="text-xl font-semibold">
+              {session.user.name ? `Hello, ${session.user.name}` : "Chat Room"}
+            </h1>
           </div>
-          <h1 className="text-xl font-semibold">Chat Room: {room}</h1>
         </div>
 
         {/* Chat Messages */}
@@ -120,7 +147,7 @@ export default function Chat() {
                 </span>
               </div>
               <span className="text-xs text-gray-400">
-                {new Date(msg.createdAt).toLocaleTimeString()}
+                {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : "Unknown Time"}
               </span>
             </div>
           ))}
