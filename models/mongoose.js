@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import  Connection  from '../models/mongoose';
+import dbConnect from '../libs/mongodb';
+
 const messageSchema = new mongoose.Schema(
   {
     room: String,
@@ -12,6 +13,12 @@ const messageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Message = mongoose.models.Message || mongoose.model('Message', messageSchema);
+let Message;
 
-export default Message;
+async function initMessageModel() {
+  await dbConnect();
+  Message = mongoose.models.Message || mongoose.model('Message', messageSchema);
+  return Message;
+}
+
+export default initMessageModel;
