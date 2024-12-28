@@ -102,7 +102,7 @@ export default function Home() {
       <section id="signup" className="py-16 text-center bg-purple-50">
         <h2 className="text-4xl font-bold mb-6 text-gray-900">Ready to Transform Your Conversations?</h2>
         <p className="text-lg mb-8 text-gray-500">Join thousands of users who trust our platform for their communication needs.</p>
-        <a href="/signup">
+        <a href="/login">
           <button className="px-10 py-4 font-medium text-white bg-purple-600 rounded-full hover:bg-purple-700 transition duration-300">
             Sign Up Now
           </button>
