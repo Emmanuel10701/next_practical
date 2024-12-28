@@ -111,7 +111,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 bg-gray-800 text-center text-white">
-        <p>&copy; 2024 ChatApp Inc. All rights reserved.</p>
+        <p>&copy; 2024 Emmanuel Chat Inc. All rights reserved.</p>
       </footer>
     </div>
   );

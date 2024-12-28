@@ -1,11 +1,14 @@
 "use client";
+
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react"; // Assuming you're using next-auth
 import Sidebar from "../components/group";
 import io from "socket.io-client";
 
 let socket;
 
 export default function Chat() {
+  const { data: session } = useSession(); // Get session data
   const [room, setRoom] = useState("general");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -16,7 +19,7 @@ export default function Chat() {
     socket = io();
 
     // Join the room
-    socket.emit("join", { userId: "user123", room });
+    socket.emit("join", { userId: session?.user?.id || "guest", room });
 
     // Fetch initial messages from MongoDB
     fetch(`/api/socket?room=${room}`)
@@ -31,13 +34,18 @@ export default function Chat() {
     return () => {
       socket.disconnect();
     };
-  }, [room]);
+  }, [room, session]);
 
   const sendMessage = () => {
+    if (!session) {
+      alert("You must log in to send messages!");
+      return;
+    }
+
     if (message.trim()) {
       const newMessage = {
         message,
-        userId: "user123",
+        userId: session.user.id,
         room,
         status: "sent",
         replyTo,
@@ -67,7 +75,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen  flex flex-col md:flex-row bg-gray-100">
+    <div className="h-screen flex flex-col md:flex-row bg-gray-100">
       {/* Sidebar */}
       <Sidebar
         groups={["general", "sports", "tech"]}
@@ -88,13 +96,22 @@ export default function Chat() {
         {/* Chat Messages */}
         <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-white">
           {messages.map((msg, index) => (
-            <div key={index} className={`space-y-1 ${msg.userId === "user123" ? "text-right" : "text-left"}`}>
+            <div
+              key={index}
+              className={`space-y-1 ${msg.userId === session?.user?.id ? "text-right" : "text-left"}`}
+            >
               {msg.replyTo && (
                 <div className="text-gray-500 text-sm pl-4 border-l-2 border-gray-300">
                   Replying to: {msg.replyTo.message}
                 </div>
               )}
-              <div className={`p-3 rounded-lg inline-block max-w-xs ${msg.userId === "user123" ? "bg-blue-100 text-blue-900" : "bg-gray-200 text-gray-800"}`}>
+              <div
+                className={`p-3 rounded-lg inline-block max-w-xs ${
+                  msg.userId === session?.user?.id
+                    ? "bg-blue-100 text-blue-900"
+                    : "bg-gray-200 text-gray-800"
+                }`}
+              >
                 {msg.message}
                 <span className="text-xs text-gray-400 ml-2">
                   {msg.status === "sent" && "•"}
@@ -102,7 +119,9 @@ export default function Chat() {
                   {msg.status === "read" && "✔✔"}
                 </span>
               </div>
-              <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleTimeString()}</span>
+              <span className="text-xs text-gray-400">
+                {new Date(msg.createdAt).toLocaleTimeString()}
+              </span>
             </div>
           ))}
         </div>
@@ -112,7 +131,10 @@ export default function Chat() {
           {replyTo && (
             <div className="text-sm text-gray-500 border px-2 py-1 rounded">
               Replying to: {replyTo.message}
-              <button className="ml-2 text-red-500" onClick={() => setReplyTo(null)}>
+              <button
+                className="ml-2 text-red-500"
+                onClick={() => setReplyTo(null)}
+              >
                 Cancel
               </button>
             </div>
