@@ -1,6 +1,7 @@
-"use client";
+"use client"; // To ensure this component works in Next.js 13+ with client-side rendering
+
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react"; // Assuming you're using next-auth
+import { useSession } from "next-auth/react";
 import Sidebar from "../components/group";
 import io from "socket.io-client";
 import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress
@@ -63,6 +64,7 @@ export default function Chat() {
         room,
         status: "sent",
         replyTo,
+        createdAt: new Date().toISOString(), // Set timestamp for new messages
       };
 
       // Send message to MongoDB via API route
@@ -147,7 +149,12 @@ export default function Chat() {
                 </span>
               </div>
               <span className="text-xs text-gray-400">
-                {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString() : "Unknown Time"}
+                {msg.createdAt
+                  ? new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Unknown Time"}
               </span>
             </div>
           ))}
@@ -166,20 +173,23 @@ export default function Chat() {
               </button>
             </div>
           )}
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="flex-grow border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          >
-            Send
-          </button>
+        <div className="flex items-center justify-center space-x-4 p-4">
+  <input
+    type="text"
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    onKeyPress={handleKeyPress}
+    placeholder="Type your message..."
+    className="flex-grow max-w-md border border-gray-300 rounded-lg px-6 py-3 shadow-lg text-lg font-medium focus:outline-none focus:ring focus:ring-blue-400 placeholder-gray-500 transition-all duration-200"
+  />
+  <button
+    onClick={sendMessage}
+    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-xl text-lg font-semibold hover:from-blue-600 hover:to-indigo-700 focus:ring focus:ring-blue-400 transition-transform transform hover:scale-105"
+  >
+    Send
+  </button>
+</div>
+
         </div>
       </div>
     </div>
