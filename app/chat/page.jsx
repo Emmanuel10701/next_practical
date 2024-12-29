@@ -27,18 +27,23 @@ export default function Chat() {
 
     // Fetch initial messages from MongoDB
     fetch(`/api/socket?room=${room}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setMessages(data);
         } else {
           console.error("Fetched data is not an array", data);
-          setMessages([]); // Default to empty array if not an array
+          setMessages([]); // Set default empty array
         }
       })
       .catch((error) => {
         console.error("Error fetching messages:", error);
-        setMessages([]); // Default to empty array on error
+        setMessages([]); // Handle fetch error gracefully
       });
 
     // Listen for incoming messages from socket
@@ -173,23 +178,22 @@ export default function Chat() {
               </button>
             </div>
           )}
-        <div className="flex items-center justify-center space-x-4 p-4">
-  <input
-    type="text"
-    value={message}
-    onChange={(e) => setMessage(e.target.value)}
-    onKeyPress={handleKeyPress}
-    placeholder="Type your message..."
-    className="flex-grow max-w-md border border-gray-300 rounded-lg px-6 py-3 shadow-lg text-lg font-medium focus:outline-none focus:ring focus:ring-blue-400 placeholder-gray-500 transition-all duration-200"
-  />
-  <button
-    onClick={sendMessage}
-    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-xl text-lg font-semibold hover:from-blue-600 hover:to-indigo-700 focus:ring focus:ring-blue-400 transition-transform transform hover:scale-105"
-  >
-    Send
-  </button>
-</div>
-
+          <div className="flex items-center justify-center space-x-4 p-4">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message..."
+              className="w-full md:w-2/3 border border-gray-300 rounded-lg px-8 py-6 shadow-lg text-xl font-medium focus:outline-none focus:ring focus:ring-blue-400 placeholder-gray-500 transition-all duration-200"
+            />
+            <button
+              onClick={sendMessage}
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-6 rounded-lg shadow-xl text-xl font-semibold hover:from-blue-600 hover:to-indigo-700 focus:ring focus:ring-blue-400 transition-transform transform hover:scale-105"
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>
