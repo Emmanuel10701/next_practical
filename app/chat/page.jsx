@@ -113,7 +113,7 @@ export default function Chat() {
       />
 
       {/* Chat Section */}
-      <div className="flex flex-col flex-grow">
+      <div className="flex flex-col flex-grow w-2/3 mr-0">
         {/* Header */}
         <div className="bg-blue-500 text-white py-4 px-6 shadow-md flex items-center">
           {/* Profile section */}

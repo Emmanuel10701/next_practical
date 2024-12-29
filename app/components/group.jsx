@@ -20,10 +20,10 @@ const getBackgroundColor = (char) => {
 
 export default function Sidebar({ groups, currentRoom, onRoomChange }) {
   return (
-    <div className="w-64 bg-gray-800 text-white h-full">
+    <div className="w-64  text-slate-500 h-full">
       {/* Sidebar Header */}
       <div className="flex justify-between items-center py-4 px-6 bg-blue-700">
-        <h2 className="text-lg font-semibold">Chat Rooms</h2>
+        <h2 className="text-lg font-semibold text-white">Chat Rooms</h2>
       </div>
 
       {/* Room List */}
@@ -33,7 +33,7 @@ export default function Sidebar({ groups, currentRoom, onRoomChange }) {
             key={index}
             onClick={() => onRoomChange(group)} // Change room when clicked
             className={`cursor-pointer py-2 px-4 rounded-md hover:bg-blue-600 ${
-              group === currentRoom ? "bg-blue-600" : "bg-gray-800"
+              group === currentRoom ? "bg-slate-300" : "bg-white"
             }`}
           >
             <div

@@ -70,7 +70,7 @@ export default function Home() {
             </motion.div>
           </div>
           <div className="md:w-1/2">
-            <Image src="/chat-hero.png" alt="Chat Hero" width={500} height={500} />
+            <Image src="/images/lady.png" alt="Chat Hero" width={500} height={500} />
           </div>
         </div>
       </header>
